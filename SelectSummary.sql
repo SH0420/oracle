@@ -211,7 +211,7 @@ where deptno=30 and job='SALESMAN';
 --Q3
 SELECT EMPNO,ENAME,JOB,SAL,DEPTNO
 FROM EMP
-where deptno=20 or deptno=30 and sal>2000; --deptno in(20,30) --집합연산자 사용안했을떄
+where deptno=20 or deptno=30 and sal>2000; --deptno in(20,30) --집합연산자 사용안했을??
 
 SELECT EMPNO, ENAME, JOB, SAL, DEPTNO
   FROM EMP
@@ -221,7 +221,7 @@ UNION
 SELECT EMPNO, ENAME, JOB, SAL, DEPTNO
   FROM EMP
  WHERE DEPTNO = 30
-   AND SAL > 2000;      --집합연산자 사용했을떄
+   AND SAL > 2000;      --집합연산자 사용했을??
 --Q4
 SELECT *
 FROM EMP
@@ -854,7 +854,7 @@ where ename = 'SCOTT';
 -- 트랜젝션
 -- commit, rollback, save point
 -- commit : 데이터 영구 저장(테이블이 데이터 반영)
---          create 구문을 사용해서 객체생성할떄(자동)
+--          create 구문을 사용해서 객체생성할??(자동)
 -- rollback : 데이터 변경 취소(테이블이 데이터 미반영)원상복구
 --             천재지변,전기,전쟁(자동)
 create table dept01
@@ -1313,7 +1313,7 @@ where deptno=30 and job='SALESMAN';
 --Q3
 SELECT EMPNO,ENAME,JOB,SAL,DEPTNO
 FROM EMP
-where deptno=20 or deptno=30 and sal>2000; --deptno in(20,30) --집합연산자 사용안했을떄
+where deptno=20 or deptno=30 and sal>2000; --deptno in(20,30) --집합연산자 사용안했을??
 
 SELECT EMPNO, ENAME, JOB, SAL, DEPTNO
   FROM EMP
@@ -1323,7 +1323,7 @@ UNION
 SELECT EMPNO, ENAME, JOB, SAL, DEPTNO
   FROM EMP
  WHERE DEPTNO = 30
-   AND SAL > 2000;      --집합연산자 사용했을떄
+   AND SAL > 2000;      --집합연산자 사용했을??
 --Q4
 SELECT *
 FROM EMP
@@ -1867,4 +1867,338 @@ where (deptno,sal) in (
                              from emp
                              group by deptno 
                        );      
->>>>>>> 79b6038b092bffbfbe2ce19b3a1e89bd3bf21a78
+
+----------------------10/21 p 266 scott연결
+-- DML(데이터조작어) : insert, update, delete
+-- insert : 테이블에 데이터 삽입
+-- insert into 테이블명 (컬럼명1,컬럼명2,......)
+-- values(값1,값2,....)
+-- 컬럼과 값의 타입과 갯수가 일치해야 한다.
+-- 작성 순서대로 1 : 1 매칭된다.
+
+
+--DML 조작어
+create table dept_temp
+as
+select * from  dept;
+
+select *
+from dept_temp;
+
+insert into dept_temp (deptno,dname,loc)
+values (50,'DATABASE','SEOUL');
+
+insert into dept_temp --컬럼 생략
+values (70,'HTML','SEOUL');
+
+insert into dept_temp  --컬럼 생략, 명시적 NULL데이터삽입
+values (80,NULL,'SEOUL');
+
+insert into dept_temp (deptno,dname) -- 묵시적 null 데이터 삽입
+values (60,'JSP'); 
+
+create table emp_temp
+as
+select * from emp
+where 1 != 1;
+
+select *
+from emp_temp;
+
+insert into emp_temp(empno,ename,job,mgr,hiredate,sal,comm,deptno)
+values(9999,'홍길동','PRESIDENT',NULL,'2001/01/01',5000,1000,10);
+
+insert into emp_temp(empno,ename,job,mgr,hiredate,sal,comm,deptno)
+values(3111,'심청이','MANAGER',9999,SYSDATE,4000,NULL,30);
+
+-- UPDATE : 컬럼의 데이터를 변경(수정)
+-- UPDATE 테이블명
+-- SET 컬럼명 = 값,컬럼명 = 값, .....
+-- where 조건식
+-- 조건절을 사용하지 않으면 해당 컬럼이 모두 변경된다.
+
+create table dept_temp2
+as
+select * from dept;
+
+select *
+from dept_temp2;
+
+update dept_temp2
+set loc = 'SEOUL';
+
+ROLLBACK;
+
+update dept_temp2
+set dname ='DATABASE',loc ='SEOUL'
+where deptno = 40;
+
+-- delete(데이터 삭제)
+-- delete from 테이블명
+-- where 조건식
+-- 조건절을 사용하지 않으면 모든 데이터가 삭제된다.
+
+create table emp_temp2
+as
+select * from emp;
+
+select *
+from emp_temp2;
+
+delete from emp_temp2;
+
+drop table emp_temp2;
+
+delete from emp_temp2
+where ename = 'SCOTT';
+
+-- TCL(데이터의 영구저장 또는 취소)
+-- 트랜젝션
+-- commit, rollback, save point
+-- commit : 데이터 영구 저장(테이블이 데이터 반영)
+--          create 구문을 사용해서 객체생성할떄(자동)
+-- rollback : 데이터 변경 취소(테이블이 데이터 미반영)원상복구
+--             천재지변,전기,전쟁(자동)
+create table dept01
+as
+select * 
+from dept;
+
+delete from dept01;
+
+commit; -- commit 이후는 rollback불가 //rollback은 commit한 지점까지
+
+select * 
+from dept01;
+
+-- 트랜젝션 적용 유무
+drop table dept01;
+
+truncate table dept01;-- drop table dept01 과 같은문장 but rollback불가,삭제동시에 commit일어남
+
+rollback;
+
+-- DDL(데이터 정의어) : table(모든객체)를 생성,삭제,변경하는 명령어
+-- create(생성), alter(변경) ,drop(삭제)
+
+create table 테이블명( --table(객체)
+     컬럼명1 타입,     -- column(속성)
+     컬럼명2 타입,     
+     컬럼명3 타입  
+);   
+
+
+--DDL
+
+
+create table emp_ddl(
+--    사번,이름,직책,관리자,입사일,급여,성과급,부서번호
+    empno number(4),
+    ename varchar2(10), -- byte
+    job varchar2(9),
+    mgr number(4),
+    hiredate date, 
+    sal number(7,2),
+    comm number(7,2),
+    deptno number(2)
+);
+select * from emp_ddl;
+
+insert into emp_ddl
+values (9999,'이순신','MANNAGER',1111,SYSDATE,1000,NULL,10);
+
+create table dept_ddl --테이블의 복사
+as
+select * from dept;
+
+create table dept_30
+as
+select * from dept
+where deptno = 30;
+
+create table dept_m
+as
+select dname,loc
+from dept;
+
+create table dept_d
+as
+select * from dept
+where 1 != 1;   --테이블의 구조만 복사한다.
+
+-- 테이블 변경(컬럼의 정보 수정)
+-- 새로운 컬럼추가, 컬럼의 이름변경, 자료형의 변경, 컬럼을 삭제
+-- alter 
+
+
+create table emp_alter
+as
+select * from emp;
+
+select *
+from emp_alter;
+
+alter table emp_alter
+add address varchar2(100);
+
+alter table emp_alter
+rename column address to addr;
+
+alter table emp_alter
+modify empno number(10);
+
+alter table emp_alter
+drop column addr;
+
+select *
+from emp_alter;
+
+--rename
+--modify
+--drop
+
+--테이블삭제 DROP
+--drop table 테이블명
+
+drop table emp_alter;
+
+Q1.
+create table EMP_HW(
+    empno number(4),
+    ename varchar2(10), -- byte
+    job varchar2(9),
+    mgr number(4),
+    hiredate date, 
+    sal number(7,2),
+    comm number(7,2),
+    deptno number(2)
+);
+
+Q2
+alter table emp_hw
+add BIGO varchar2(20);
+
+Q3
+alter table emp_hw
+modify bigo varchar2(30);
+
+Q4
+alter table emp_hw
+rename column bigo to remark; 
+
+Q5
+insert into emp_hw
+select  empno,ename,job,mgr,hiredate,sal,comm,deptno,null
+from emp;
+
+Q6
+drop table emp_hw;
+
+select *
+from emp_Hw;
+
+-----327P
+-- 데이터사전
+desc user_tables;
+
+select table_name
+from user_tables;
+
+select owner, table_name
+from all_tables;
+
+--index(검색속도를 향상하기위해 사용 객체)
+--select 구문의 검속을 향상 시킨다
+--전체 레코드의 3% ~5% 정도 일때
+--index객체를 컬럼에 생성해서 사용한다
+
+create index 인덱스명
+on 테이블명(컬럼명);
+
+create table emp01
+as
+select * from emp;
+
+insert into emp01
+select *
+from emp01;
+
+insert into emp01(empno,ename)
+values(1111,'bts');
+
+--index 객체 생성전(0.030 ~ 0.040)
+select empno,ename
+from emp01
+where ename = 'bts';
+
+create index idx_emp01_ename
+on emp01(ename);
+-- index 객체 생성후(0초)
+select empno,ename
+from emp01
+where ename ='bts';
+
+drop index idx_emp01_ename; --삭제
+
+select *
+from emp01;
+
+drop table emp01;
+
+-- 테이블 삭제후 원복
+ show recyclebin; -- 지워진 테이블 보기
+ 
+ flashback table EMP_HW  --복구
+ to before drop;
+
+ purge recyclebin; --휴지통 비우기
+ 
+ -----------p360
+ 
+ -- 제약조건(무결성) : 잘못된 값이 데이터로 사용되는것을 못하게 하는 것
+ -- not null
+ -- unique  --> 중복은 허용함 
+ -- primary key
+ -- foreign key
+ -- check
+ 
+ -- emp,dept
+ 
+ 
+ 
+ insert into emp
+ values (1111,'aaa','MANAGE',9999,SYSDATE,1000,NULL,50);
+ 
+ drop table emp02;
+ 
+ create table emp02(
+          empno number(4) primary key, -- (not null + unique) =primary key  
+          ename varchar2(10) not null, -->not null로 제약조건을 검
+          job varchar2(9),
+          deptno number(2)
+ );
+ --기본키 사번번호로 구별함
+insert into emp02
+values (1111,'홍길동','MANAGER',30);
+ 
+insert into emp02
+values (2222,'홍길동','MANAGER',30); 
+ 
+insert into emp02
+values (null,'김유신','SALESMAN',20);  
+ 
+insert into emp02
+values (2222,'옥동자','SALESMAN',10);  
+--무결성 제약 조건(SCOTT.SYS_C0011064)에 위배됩니다
+--무결성 제약 조건(SCOTT.EMP02_EMPNO_PK)에 위배됩니다
+delete from emp02;
+
+ create table emp02(
+          empno number(4) constraint emp02_empno_pk primary key, --제약조건을 우리가확인할수있게 변경하는법
+          ename varchar2(10) constraint emp02_ename_nn not null, --constraint 제약조건명     
+          job varchar2(9),
+          deptno number(2)
+ );
+
+select *
+from emp02;
