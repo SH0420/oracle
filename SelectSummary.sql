@@ -2814,3 +2814,37 @@ to user04; -->user04는 select할수있는 권한을 얻음
 --user04접속
 select * from scott.emp;
 
+--시스템계정 접속
+create user user05 identified by 1234;
+
+grant connect,resource
+to user05;
+
+--user05접속
+select * from user_role_privs;  
+
+select * from scott.emp; -->오류
+
+--시스템계정 접속
+create role mrole3;
+
+--scott계정 접속
+grant select
+on emp
+to mrole3;
+
+--시스템계정 접속
+grant mrole3
+to user05;
+
+--user05접속
+
+select * from user_role_privs;  
+
+set role all; -- ?
+
+select * from scott.emp;
+
+--시스템계정접속
+revoke mrole3
+from user05;
