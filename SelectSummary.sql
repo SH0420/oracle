@@ -2639,6 +2639,178 @@ where 1 != 1;
 insert into emp01
 values (emp_seq.nextval,'hong',sysdate);
 
-select * from emp01;
+create table product(
+    pid varchar2(10),
+    pname varchar2(10),
+    price number(5),
 
-drop sequence emp_seq;
+    constraint product_pid_pk primary key(pid)
+);    
+
+create sequence idx_product_id
+start with 1000;
+
+insert into product(pid,pname,price)
+values ('pid' || idx_product_id.nextval,'치즈',2000);
+
+select * from product;
+
+drop sequence idx_product_id;
+
+--p396
+-- 사용자 관리(객체)
+-- 관리자 계정에서 가능(system)
+-- create, drop
+-- create user 계정명 identified by 패스워드
+-- alter user 계정명 identified by 패스워드
+-- drop user 계정명 cascade
+
+--시스템계정으로연결
+create user user01 identified by 1234; 
+--> user USER01 lacks CREATE SESSION privilege; logon denied 오류뜸
+grant CREATE SESSION
+to user01;
+
+-- DCL(제어어)
+-- grant(권한부여), revoke(권한회수)
+-- grant 시스템권한 to 계정명
+-- revoke 시스템권한 from 계정명
+
+--user01계정으로 연결
+create table test
+(
+  id varchar2(10)
+); -->권한이 불충분합니다
+
+--시스템계정으로 연결
+grant create table
+to user01;
+--그러고 다시 위에 실행
+
+
+--시스템계정으로 연결
+grant create table --권한부여
+to user01;
+
+revoke create table --권한회수
+from user01;
+
+create user user01 identified by 1234; -->생성 하고싶을때 
+
+drop user user01 CASCADE; -->삭제 하고싶을때 
+
+alter user user01 identifide by tiger;-->비밀번호 변경하고싶을때
+
+
+--user01 연결
+insert into test
+values('aaa'); --> 테이블스페이스 'USERS'에 대한 권한이 없습니다.
+
+--시스템계정으로 연결
+alter user user01
+quota 2m on USERS;
+-->다시 위에 실행 
+
+
+-- 시스템 권한(create ....)
+-- 객체 권한  (select, ....)
+
+--user01 연결
+select * from emp;-->오류뜸
+
+--scott 연결
+--grant 객체권한 종류 
+--on 객체명
+--to 계정명
+
+grant select
+on emp
+to user01;
+-->권한을준다
+
+--user01 연결
+select * from scott.emp;
+
+--다쓰고나면 회수 scott연결
+revoke select
+on emp
+from user01;
+
+----- p412
+--롤
+--시스템계정접속
+create user user02 identified by 1234;
+
+grant connect,resource
+to user02;
+
+--user02 접속
+create table test(
+   id varchar2(10)
+);
+
+insert into test
+values('aaa');
+
+--시스템계정 접속
+create user nbac identified by 1234;
+
+grant DBA,connect,resource
+to nbac;
+
+-- system == nbac
+
+--nbac접속
+create user user03 identified by 1234;
+
+-- 사용자 정의롤
+-- 관리자 계정에서만 가능
+-- create role 롤명 
+-- grant 권한 to 롤명
+
+--시스템계정,nbac 접속
+create role mrole;
+
+grant create session,create table,create view -- 시스템 권한
+to mrole;
+
+create user user04 identified by 1234;
+
+grant mrole
+to user04;
+
+--user04접속
+create table test(
+   id varchar2(10)
+);   
+
+insert into test
+values ('aaa'); -->실행시 '테이블스페이스 'USERS'에 대한 권한이 없습니다' 
+
+--시스템계정 접속
+alter user user04
+quota 2m on users; -->권한부여
+
+--user4로 다시실행
+insert into test
+values ('aaa'); 
+
+select * from test;
+
+--시스템계정접속
+--관리자 권한에서 롤 생성
+create role mrole2;
+
+--객체권한은 해당 사용자 계정에서 가능
+--scott 접속
+grant select 
+on emp
+to user04;
+
+-- 롤 권한은 관리자 계정에서만 가능 ,시스템계정 접속
+grant mrole2
+to user04; -->user04는 select할수있는 권한을 얻음
+
+--user04접속
+select * from scott.emp;
+
