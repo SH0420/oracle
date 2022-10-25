@@ -2488,7 +2488,7 @@ select * from emp_dept_view;
 --부서별 최소급여와 최대급여
 --dname min_sal max_sal
 
-create or replace view sal_view(dname,min_sal,max_sal)
+create or replace view sal_view
 as
 select dname,min(sal) as min_sal, max(sal) as max_sal
 from emp e inner join dept d
@@ -2497,4 +2497,148 @@ group by d.dname;
 
 select * from sal_View;
 
+drop view sal_view;
 
+
+---------10 25
+--모든 객체의 이름은 중복될수 업다.
+
+create or replace view sal_view --or replace 가있어서 중복으로 생성가능
+as
+select dname,min(sal) as min_sal, max(sal) as max_sal, avg(sal) as avg_sal
+from emp e inner join dept d
+on e.deptno = d.deptno
+group by d.dname;
+
+
+--with check option
+create or replace view view_chk30
+as
+select empno,ename,sal,comm,deptno
+from emp_copy
+where deptno = 30 with check option; -- 조건절의 컬럼을 수정하지 못하게 한다.
+
+update view_chk30
+set deptno = 10; -- 뷰의 WITH CHECK OPTION의 조건에 위배 됩니다
+
+--with read only
+create or replace view view_read30
+as
+select empno,ename,sal,comm,deptno
+from emp_copy
+where deptno = 30 with read only; 
+-- 모든 컬럼에 대한 C U D가 불가능(조회만 가능)
+
+update view_read30
+set deptno = 10; 
+--읽기 전용 뷰에서는 DML 작업을 수행할 수 없습니다.(insert, update, delete)
+
+-- 뷰의 활용
+-- TOP -N 조회하기
+-- Rownum (의사컬럼)
+select * from emp;
+
+--입사일이 가장 빠른 5명의 사원을 조회
+select *
+from emp
+order by hiredate asc;
+
+select * 
+from emp
+where hiredate <= '81/05/01';
+
+DESC emp;
+
+select rownum,empno,ename,hiredate
+from emp
+where rownum <= 5;
+
+select rownum,empno,ename,hiredate
+from emp
+order by hiredate asc;
+
+create or replace view view_hiredate
+as
+select empno,ename,hiredate
+from emp
+order by hiredate asc;
+
+select * from view_hiredate;
+
+select rownum,empno,ename,hiredate 
+from view_hiredate
+where rownum <= 7;
+
+select rownum,empno,ename,hiredate
+from view_hiredate
+where rownum between 2 and 5; -- rownum을 조건절에 직접 사용시 반드시 1을 포함하는 조건식을 만들어야 한다.
+
+create or replace view view_hiredate_rm --rownum은 일회용으로 쓰여지기때문에 고정값으로 사용하기위해서는 생성해야함
+as
+select rownum rm,empno,ename,hiredate
+from view_hiredate;
+
+select rm,empno,ename,hiredate 
+from view_hiredate_rm
+where rm >=2 and rm <=5; -- =rm between 2 and 5;
+
+--인라인뷰
+select rm,b.*
+from( 
+     select rownum rm,a.*
+     from (
+           select rownum empno,ename,hiredate
+           from emp
+           order by hiredate asc
+           )a
+     )b
+where rm >=2 and rm <=5;
+
+--입사일이 가장 빠른 5명을 조회하세요
+select rownum,empno,ename,hiredate
+from (
+       select empno,ename,hiredate
+       from emp
+       order by hiredate asc
+      )
+where rownum <=5;
+
+-- 시퀀스
+-- 자동으로 번호를 증가시키는 기능수행
+-- create, drop
+-- nextval,currval
+
+--create sequence 시퀀스명
+--start with  시작값 -> 1
+--increment by  증가치 => 1
+--maxvalue    최대값 => 10의 1027
+--minvalue    최소값 => 10의 -1027
+
+create sequence dept_deptno_seq
+increment by 10
+start with 10;
+
+select dept_deptno_seq.nextval
+from dual;
+
+select dept_deptno_seq.currval
+from dual;
+
+create sequence emp_seq
+start with 1
+increment by 1
+maxvalue 1000;
+
+drop table emp01;
+
+create table emp01
+as
+select empno,ename,hiredate from emp
+where 1 != 1;
+
+insert into emp01
+values (emp_seq.nextval,'hong',sysdate);
+
+select * from emp01;
+
+drop sequence emp_seq;
