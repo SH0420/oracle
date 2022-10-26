@@ -2932,25 +2932,17 @@ declare
    TYPE mgr_table_type IS TABLE OF emp.mgr%type
    INDEX BY BINARY_INTEGER;
 
-   TYPE hiredate_table_type IS TABLE OF emp.hiredate%type
-   INDEX BY BINARY_INTEGER;
-
    TYPE sal_table_type IS TABLE OF emp.sal%type
    INDEX BY BINARY_INTEGER;
-
+    
    TYPE empno_table_type IS TABLE OF emp.empno%type
-   INDEX BY BINARY_INTEGER; 
-
-   TYPE deptno_table_type IS TABLE OF emp.deptno%type
    INDEX BY BINARY_INTEGER;
    
    enameArr ename_table_type; --> 배열형식의 변수 선언
    jobArr job_table_type; --> 배열형식의 변수선언
    mgrArr mgr_table_type;
-   hiredateArr hiredate_table_type;
    salArr sal_table_type;
    empnoArr empno_table_type;
-   deptnoArr deptno_table_type;
    
    i BINARY_INTEGER := 0;
 begin
@@ -2959,16 +2951,12 @@ begin
           enameArr(i) := k.ename;
           jobArr(i) := k.job;
           mgrArr(i) := k.mgr;
-          hiredate(i) := k.hiredate;
-          sal(i) := k.empno;
-          empno(i) := k.deptno;
-          
-          
-          
+          salArr(i) := k.sal;
+          empnoArr(i) := k.empno;
   end loop;
     
   for j in 1..i loop
-           dbms_output.put_line(enameArr(j)||' / '||jobArr(j)||' / '||mgrArr(j)||' / '||hiredate(j)||' / '||sal(j)||' / '||empno(j));
+           dbms_output.put_line(enameArr(j)||' / '||jobArr(j)||' / '||mgrArr(j)||' / '||salArr(j)||' / '||empnoArr(j));
      end loop;      
 end;
 / 
@@ -2992,7 +2980,7 @@ begin
     from emp
     where empno =7788;
     
-    dbms_output.put_line(emp_record,v_empno||''|| emp_record,v_ename||''||emp_record,v_job||''|| emp_record,v_deptno);
+    dbms_output.put_line(emp_record.v_empno||''|| emp_record.v_ename||''||emp_record.v_job||''|| emp_record.v_deptno);
   
 end;
 / 
@@ -3043,7 +3031,7 @@ end;
 
 --삭제
 declare
-   v_deptno dept_record.deptno%type :50;
+   v_deptno dept_record.deptno%type :=50;
 begin
    delete from dept_record
    where deptno = v_deptno;
