@@ -3072,7 +3072,7 @@ end;
 /
 
 declare
-  -- %ROWTYPE : 테이블의 모든 컬럼의 이름과 변수를 참조하겠다
+  -- %ROWTYPE : 테이블의 모든 컬럼의 이름과 타입을 참조하겠다
   -- 컬럼명이 변수명으로 사용되고 컬럼의 타입을 변수의 타입으로 사용한다
 
 
@@ -3100,9 +3100,6 @@ end;
  --         - TYPE xxxx
 
 declare
-    -- %ROWTYPE : 테이블의 모든 컬럼의 이름과 변수를 참조하겠다
-   -- 컬럼명이 변수명으로 사용되고 컬럼의 타입을 변수의 타입으로 사용한다
-   
    vemp emp%rowtype;
    annsal number(7,2);
    
@@ -3129,9 +3126,7 @@ end;
 /
 
 declare
-    -- %ROWTYPE : 테이블의 모든 컬럼의 이름과 변수를 참조하겠다
-   -- 컬럼명이 변수명으로 사용되고 컬럼의 타입을 변수의 타입으로 사용한다
-   
+
    vemp emp%rowtype;
    annsal number(7,2);
    
@@ -3263,3 +3258,354 @@ begin
     end loop;
 end;
 /
+
+-----------10 27 481p
+set serveroutput on;
+
+--저장 프로시저
+-- 1. 생성(create)
+-- 2. 실행(execute or exec)
+create or replace procedure 프로시저명(매개변수)
+
+is or as
+    변수 정의
+begin
+    SQL
+    출력구문
+    조건문 , 반복문
+end;
+/
+
+drop table emp01;
+
+create table emp01
+as
+select * 
+from emp;
+
+create or replace procedure emp01_print
+is
+    vempno number(10);
+    vename varchar(10);
+begin
+    vempno := 1111;
+    vename := 'Hong';
+    
+    dbms_output.put_line(vempno || '' || vename);
+end;
+/ 
+-->프로시저생성
+
+execute emp01_print; 
+-->실행
+ 
+create or replace procedure emp01_del
+is
+begin
+   delete from emp01;
+end;
+/
+
+exec emp01_del;
+select * from emp01;
+
+create or replace procedure del_ename(vename emp01.ename%type)
+is
+   
+begin
+   delete from emp01
+   where ename = vename;
+end;
+/
+
+exec del_ename('SCOTT'); 
+--> SCOTT사원삭제
+
+select * from emp01
+where ename = 'SCOTT';   
+--> 삭제 됐는지 확인 
+
+exec del_ename('SMITH');  
+--> SMITH사원삭제
+
+select * from emp01
+where ename = 'SMITH';
+--> 삭제 됐는지확인
+
+
+-- 저장프로시져의 매개변수 유형
+-- in , out ,in out
+-- in : 값을 전달받는 용도
+-- out : 프로시저 내부의 실행 결과를 실행을 요청한 쪽으로 값을 전달
+-- in out : in + out
+
+create or replace procedure sel_empno
+(
+    vempno in emp.empno%type,
+    vename out emp.ename%type,
+    vsal out emp.sal%type,
+    vjob out emp.job%type
+)  
+--->사번을 통해 특정 사원조회
+is
+
+begin
+    select ename,sal,job
+    into vename,vsal,vjob
+    from emp
+    where empno = vempno; 
+end;
+/
+--바인드변수
+variable var_ename varchar2(15);
+variable var_sal number;
+variable var_job varchar2(9);
+
+
+exec sel_empno(7499,:var_ename,:var_sal,:var_job);
+-->in타입은 결과를 받아주고, out 타입은 바인드변수 ?
+-->바인드변수사용할때는 앞에 : 사용
+
+print var_ename;
+print var_sal;
+print var_job;
+-->바인드변수 출력
+
+-- 문제
+-- 사원 정보를 저장하는 저장 프로시저 만드세요
+-- 사번, 이름, 직책, 매니저 ,부서
+-- 사원 정보는 매개변수 사용해서 받아온다.
+
+create table emp02
+as
+select empno,ename,job,mgr,deptno
+from emp
+where 1 != 1;
+
+create or replace procedure insert_sawon
+(   
+    vempno in emp02.empno%type,
+    vename in emp02.ename%type,
+    vjob in emp02.job%type,
+    vmgr in emp02.mgr%type,
+    vdeptno in emp02.deptno%type
+ )
+is
+ 
+begin
+    insert into emp02
+    values(vempno,vename,vjob,vmgr,vdeptno);
+end;
+/
+
+exec insert_sawon(1111,'hong','sales',2222,10);
+
+select * from emp02;
+
+-- 저장 함수
+-- 저장함수와 저장 프로시저의 차이점 : return값 유무
+-- 1. 생성(create)
+-- 2. 실행(execute)
+
+create or replace function 함수명(매개변수)
+   RETURN 값의 타입 -- 세미콜론 생략
+is
+   변수정의
+begin
+   
+   SQL구문
+   출력함수
+   조건문 , 반복문
+   
+   RETURN 리턴값; --세미콜론 사용
+end;
+/
+
+create or replace function cal_bonus(vempno emp.empno%type)
+   return number
+is 
+    vsal number(7,2);
+begin
+    select sal
+    into vsal
+    from emp
+    where empno = vempno;
+    
+    return vsal * 200;
+end;
+/
+
+variable var_res number;
+
+execute :var_res := cal_bonus(7788);
+--->exec뒤에 변수를 선언해야한다.
+
+print :var_res;
+---> 출력 600000
+
+drop procedure insert_sawon;
+
+dorp function cal_bonus;
+
+--커서 p460
+
+declare
+
+begin
+    select *
+    into 변수
+    from emp;
+    --where 조건식
+end;
+/
+
+declare
+    --커서 : select 구문이 실행하는 결과를 가리킨다.
+    CURSOR 커서명 IS sql 구문(select); --> 커서선언
+begin
+   OPEN 커서명;
+   LOOP
+       FETCH 커서명 INTO 변수명 -->테이블로부터 가져와서 변수에 저장하는 역할
+       exit when 커서명%NOTFOUND
+   END LOOP;
+   CLOSE 커서명;  -->커서 
+end;
+/
+
+declare
+    CURSOR c1 IS select * from emp; 
+    vemp emp%rowtype;
+begin
+   OPEN c1;
+   LOOP
+       FETCH c1 INTO vemp;  -->테이블로부터 가져와서 변수에 저장하는 역할
+       exit when c1%NOTFOUND;
+       dbms_output.put_line(vemp.empno||' '||vemp.ename||' '||vemp.job||' '||vemp.mgr||' '||vemp.sal||' '||vemp.comm||' '||vemp.deptno||' '||vemp.hiredate);
+   END LOOP;
+   CLOSE c1;  -->커서 
+end;
+/
+--결과
+--7369 SMITH CLERK 7902 800  20 80/12/17
+--7499 ALLEN SALESMAN 7698 1600 300 30 81/02/20
+--7521 WARD SALESMAN 7698 1250 500 30 81/02/22
+--7566 JONES MANAGER 7839 2975  20 81/04/02
+--7654 MARTIN SALESMAN 7698 1250 1400 30 81/09/28
+--7698 BLAKE MANAGER 7839 2850  30 81/05/01
+--7782 CLARK MANAGER 7839 2450  10 81/06/09
+--7788 SCOTT ANALYST 7566 3000  20 87/04/19
+--7839 KING PRESIDENT  5000  10 81/11/17
+--7844 TURNER SALESMAN 7698 1500 0 30 81/09/08
+--7876 ADAMS CLERK 7788 1100  20 87/05/23
+--7900 JAMES CLERK 7698 950  30 81/12/03
+--7902 FORD ANALYST 7566 3000  20 81/12/03
+--7934 MILLER CLERK 7782 1300  10 82/01/23
+
+---for문
+declare
+    CURSOR c1 IS select * from dept; 
+    vdept dept%rowtype;
+begin
+    for vdept in c1 loop
+         exit when c1%notfound;
+         dbms_output.put_line(vdept.deptno||' '||vdept.dname||' '||vdept.loc);
+    end loop;
+end;
+/
+
+--결과
+--10 ACCOUNTING NEW YORK
+--20 RESEARCH DALLAS
+--30 SALES CHICAGO
+--40 OPERATIONS BOSTON
+
+
+
+--아이디,이름,이름의 성,부서이름
+
+--hr계정접속
+-- employees, departments
+-- 조인방식
+select employee_id, first_name, last_name, department_name
+from employees e inner join departments d
+on e.department_id = d.department_id
+where e.department_id = 100;
+-->실행
+--108	Nancy	Greenberg	Finance
+--109	Daniel	Faviet	Finance
+--110	John	Chen	Finance
+--111	Ismael	Sciarra	Finance
+--112	Jose Manuel	Urman	Finance
+--113	Luis	Popp	Finance
+
+select count(*) from employees; 
+
+select * from employees
+where department_id is null;
+
+--서브쿼리방식
+select employee_id, first_name, last_name, department_id, 
+    (
+           select department_name
+           from departments d
+           where e.department_id = d.department_id
+     ) as dep_name      
+from employees e
+where department_id = 100;
+--위와 결과는 동일하다
+ 
+select employee_id, first_name, last_name,get_dep_name(department_id)
+from employees e
+where e.department_id = 100;
+ --조인방식 서브쿼리방식과 결과값이 동일
+ 
+-- 프로시저(함수)
+
+create or replace function get_dep_name(dept_id number)
+    return varchar2
+is
+  sDepName varchar2(30);
+begin
+   select department_name
+   into sDepName
+   from departments
+   where department_id =dept_id;
+   
+   return sDepName;
+end;
+/
+
+variable var_depname varchar2(30);
+
+exec :var_depname := get_dep_name(90);
+
+print :var_depname;
+-->출력 Executive
+
+
+select employee_id, first_name, last_name,get_dep_name(department_id)
+from employees e
+where e.department_id = 100;
+ 
+select sum(sal), max(sal)
+from emp;
+ 
+ --문제
+ -- employees, jobs
+ --사원아이디, 이름, 성, job_title
+ 
+ -- 조인 방식
+ -- 서브 쿼리
+ -- get_job_title()
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
