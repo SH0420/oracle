@@ -3461,6 +3461,7 @@ end;
 
 declare
     --커서 : select 구문이 실행하는 결과를 가리킨다.
+           -- 기존 프로시저의 제약을 없애기 위해서 (select)
     CURSOR 커서명 IS sql 구문(select); --> 커서선언
 begin
    OPEN 커서명;
@@ -3554,15 +3555,10 @@ from employees e
 where department_id = 100;
 --위와 결과는 동일하다
  
-select employee_id, first_name, last_name,get_dep_name(department_id)
-from employees e
-where e.department_id = 100;
- --조인방식 서브쿼리방식과 결과값이 동일
- 
 -- 프로시저(함수)
 
 create or replace function get_dep_name(dept_id number)
-    return varchar2
+    return varchar2  -->크기는지정x 타입만정해라
 is
   sDepName varchar2(30);
 begin
@@ -3574,6 +3570,11 @@ begin
    return sDepName;
 end;
 /
+
+select employee_id, first_name, last_name,get_dep_name(department_id)
+from employees e
+where e.department_id = 100;
+ --조인방식 서브쿼리방식과 결과값이 동일
 
 variable var_depname varchar2(30);
 
@@ -3595,14 +3596,49 @@ from emp;
  --사원아이디, 이름, 성, job_title
  
  -- 조인 방식
+ 
+ select employee_id,first_name,last_name,job_title
+ from employees e inner join jobs j
+ on e.job_id =j.job_id
+ where e.job_id = 'ST_MAN';
+ 
  -- 서브 쿼리
+ 
+ select employee_id,first_name,last_name,
+      (
+         select job_title
+         from jobs j
+         where e.job_id = j.job_id 
+       ) as job_titles 
+ from employees e
+ where e.job_id = 'ST_MAN';
+
  -- get_job_title()
  
+create or replace function get_job_title(j_id varchar2)
+    return varchar2
+is
+    sJobTitle varchar(50);
+begin
+    select job_title
+    into sJobTitle
+    from jobs
+    where job_id = j_id;
+    
+    return sJobTitle;
+end;
+/
  
+select employee_id,first_name,last_name,get_job_title(job_id)
+from employees e
+where e.job_id = 'ST_MAN';
  
- 
- 
- 
+ -->결과값
+120	Matthew	 Weiss	    Stock Manager
+121	Adam	 Fripp	    Stock Manager
+122	Payam	 Kaufling	Stock Manager
+123	Shanta	 Vollman	Stock Manager
+124	Kevin	 Mourgos	Stock Manager
  
  
  
